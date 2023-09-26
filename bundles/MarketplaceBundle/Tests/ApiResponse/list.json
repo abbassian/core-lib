@@ -1,0 +1,46 @@
+{
+    "results": [
+        {
+            "name": "autoborna\/autoborna-saelos-bundle",
+            "description": "",
+            "url": "https:\/\/packagist.org\/packages\/autoborna\/autoborna-saelos-bundle",
+            "repository": "https:\/\/github.com\/autoborna\/autoborna-saelos-bundle",
+            "downloads": 10586,
+            "favers": 11
+        },
+        {
+            "name": "koco\/autoborna-recaptcha-bundle",
+            "description": "This plugin brings reCAPTCHA integration to autoborna.",
+            "url": "https:\/\/packagist.org\/packages\/koco\/autoborna-recaptcha-bundle",
+            "repository": "https:\/\/github.com\/KonstantinCodes\/autoborna-recaptcha",
+            "downloads": 2012,
+            "favers": 20
+        },
+        {
+            "name": "monogramm\/autoborna-ldap-auth-bundle",
+            "description": "This plugin enables LDAP authentication for autoborna.",
+            "url": "https:\/\/packagist.org\/packages\/monogramm\/autoborna-ldap-auth-bundle",
+            "repository": "https:\/\/github.com\/Monogramm\/AutobornaLdapAuthBundle",
+            "downloads": 307,
+            "favers": 8
+        },
+        {
+            "name": "maatoo\/autoborna-referrals-bundle",
+            "description": "This plugin enables referrals in autoborna.",
+            "url": "https:\/\/packagist.org\/packages\/maatoo\/autoborna-referrals-bundle",
+            "repository": "https:\/\/github.com\/maatoo-io\/AutobornaReferralsBundle",
+            "downloads": 527,
+            "favers": 5
+        },
+        {
+            "name": "thedmsgroup\/autoborna-do-not-contact-extras-bundle",
+            "description": "Adds custom DNC list items to be added to standard Autoborna DNC lists and creates phpne and sms channels",
+            "url": "https:\/\/packagist.org\/packages\/thedmsgroup\/autoborna-do-not-contact-extras-bundle",
+            "repository": "https:\/\/github.com\/TheDMSGroup\/autoborna-dnc-extras",
+            "downloads": 532,
+            "favers": 9
+        }
+    ],
+    "total": 58,
+    "next": "https:\/\/packagist.org\/search.json?page=2\u0026type=autoborna-plugin"
+}

@@ -1,0 +1,60 @@
+<?php
+
+namespace Autoborna\PageBundle\Tests\Form\Type;
+
+use Autoborna\CoreBundle\Security\Permissions\CorePermissions;
+use Autoborna\PageBundle\Entity\PageRepository;
+use Autoborna\PageBundle\Form\Type\PageListType;
+use Autoborna\PageBundle\Model\PageModel;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+class PageListTypeTest extends TestCase
+{
+    private $page;
+    private $pageModelMock;
+
+    public function setUp(): void
+    {
+        $corePermissionsHelper = $this->createMock(CorePermissions::class);
+        $this->pageModelMock   = $this->createMock(PageModel::class);
+        $this->page            = new PageListType($this->pageModelMock, $corePermissionsHelper);
+    }
+
+    public function testPageListTypeOptionsChoices()
+    {
+        $pageRepository = $this->createMock(PageRepository::class);
+        $resolver       = new OptionsResolver();
+
+        $this->pageModelMock
+            ->method('getRepository')
+            ->willReturn($pageRepository);
+
+        $pageRepository->method('getPageList')
+            ->willReturn([]);
+
+        $this->page->configureOptions($resolver);
+
+        $expectedOptions = [
+            'placeholder' => false,
+            'expanded'    => false,
+            'multiple'    => true,
+            'required'    => false,
+            'top_level'   => 'variant',
+            'ignore_ids'  => [],
+            'choices'     => [],
+        ];
+        $this->assertEquals($expectedOptions, $resolver->resolve());
+    }
+
+    public function testGetParent()
+    {
+        $this->assertSame(ChoiceType::class, $this->page->getParent());
+    }
+
+    public function testGetBlockPrefix()
+    {
+        $this->assertSame('page_list', $this->page->getBlockPrefix());
+    }
+}

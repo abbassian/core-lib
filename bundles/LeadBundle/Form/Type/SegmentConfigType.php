@@ -1,0 +1,39 @@
+<?php
+
+namespace Autoborna\LeadBundle\Form\Type;
+
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\FormBuilderInterface;
+
+class SegmentConfigType extends AbstractType
+{
+    /**
+     * @param FormBuilderInterface<FormBuilderInterface> $builder
+     * @param mixed[]                                    $options
+     */
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder->add(
+            'segment_rebuild_time_warning',
+            NumberType::class,
+            [
+                'label'      => 'autoborna.lead.list.form.config.segment_rebuild_time_warning',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'   => 'form-control',
+                    'tooltip' => 'autoborna.lead.list.form.config.segment_rebuild_time_warning.tooltip',
+                ],
+                'required' => false,
+            ]
+        );
+    }
+
+    /**
+     * @return string
+     */
+    public function getBlockPrefix()
+    {
+        return 'segment_config';
+    }
+}

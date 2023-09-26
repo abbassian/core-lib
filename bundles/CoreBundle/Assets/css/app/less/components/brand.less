@@ -1,0 +1,43 @@
+//
+// Logo
+// --------------------------------------------------
+
+// autoborna-brand
+.autoborna-brand {
+  display: block;
+  height: @header-height;
+  padding-left: 35px;
+  padding-right: 32px;
+  width: 100%;
+  overflow: hidden;
+
+  &.pull-left {
+    width: 75%;
+  }
+
+  &.minimized {
+    background-size: contain;
+  }
+
+  // autoborna logo figure
+  > svg.autoborna-logo-figure {
+    width: @autoborna-logo-figure-width;
+    height: @header-height;
+    .circle {
+      fill: @autoborna-logo-figure-circle-fill;
+    }
+    .m,
+    .m-arrow {
+      fill: @autoborna-logo-figure-m-fill;
+    }
+  }
+
+  // autoborna logo text
+  > svg.autoborna-logo-text {
+    height: @header-height;
+    width: @autoborna-logo-text-width;
+    .m,.a,.u,.t,.i,.c {
+      fill: @autoborna-logo-text-fill
+    }
+  }
+}

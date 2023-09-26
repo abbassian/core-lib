@@ -1,0 +1,56 @@
+<?php
+
+namespace Autoborna\LeadBundle\Form\Type;
+
+use Autoborna\CoreBundle\Form\Type\FormButtonsType;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\FormBuilderInterface;
+
+class DncType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options)
+    {
+        $builder->add(
+            'reason',
+            TextareaType::class,
+            [
+                'label'      => 'autoborna.lead.batch.dnc_reason',
+                'required'   => false,
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => ['class' => 'form-control'],
+            ]
+        );
+
+        $builder->add(
+            'ids',
+            HiddenType::class
+        );
+
+        $builder->add(
+            'buttons',
+            FormButtonsType::class,
+            [
+                'apply_text'     => false,
+                'save_text'      => 'autoborna.core.form.save',
+                'cancel_onclick' => 'javascript:void(0);',
+                'cancel_attr'    => [
+                    'data-dismiss' => 'modal',
+                ],
+            ]
+        );
+
+        if (!empty($options['action'])) {
+            $builder->setAction($options['action']);
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getBlockPrefix()
+    {
+        return 'lead_batch_dnc';
+    }
+}

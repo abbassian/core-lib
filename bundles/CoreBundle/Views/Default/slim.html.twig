@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    {% include('AutobornaCoreBundle:Default:head.html.twig') %}
+    <body>
+        {{ outputScripts('bodyOpen') }}
+        <section id="app-content" class="container content-only">
+            {{ include('AutobornaCoreBundle:Notification:flashes.html.twig', {
+                alertType: 'standard'
+            }) }}
+            {{ include('AutobornaCoreBundle:Default:output.html.twig') }}
+        </section>
+        {{ include('AutobornaCoreBundle:Helper:modal.html.twig', {
+            id: 'AutobornaSharedModal',
+            footerButtons: true
+        }) }}
+        {{ outputScripts('bodyClose') }}
+        <script>
+            Autoborna.onPageLoad('body');
+        </script>
+    </body>
+</html>

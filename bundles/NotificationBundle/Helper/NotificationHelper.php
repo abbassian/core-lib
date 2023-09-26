@@ -1,0 +1,231 @@
+<?php
+
+namespace Autoborna\NotificationBundle\Helper;
+
+use Doctrine\ORM\EntityManager;
+use Autoborna\CoreBundle\Helper\CoreParametersHelper;
+use Autoborna\CoreBundle\Templating\Helper\AssetsHelper;
+use Autoborna\LeadBundle\Entity\DoNotContact;
+use Autoborna\PluginBundle\Helper\IntegrationHelper;
+use Symfony\Bundle\FrameworkBundle\Routing\Router;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+
+class NotificationHelper
+{
+    /**
+     * @var EntityManager
+     */
+    protected $em;
+
+    /**
+     * @var IntegrationHelper
+     */
+    protected $integrationHelper;
+
+    /**
+     * @var CoreParametersHelper
+     */
+    protected $coreParametersHelper;
+
+    /**
+     * @var AssetsHelper
+     */
+    protected $assetsHelper;
+
+    /**
+     * @var Router
+     */
+    protected $router;
+
+    /**
+     * @var RequestStack
+     */
+    protected $requestStack;
+
+    /**
+     * @var \Autoborna\LeadBundle\Model\DoNotContact
+     */
+    private $doNotContact;
+
+    /**
+     * NotificationHelper constructor.
+     */
+    public function __construct(EntityManager $em, AssetsHelper $assetsHelper, CoreParametersHelper $coreParametersHelper, IntegrationHelper $integrationHelper, Router $router, RequestStack $requestStack, \Autoborna\LeadBundle\Model\DoNotContact $doNotContact)
+    {
+        $this->em                   = $em;
+        $this->assetsHelper         = $assetsHelper;
+        $this->coreParametersHelper = $coreParametersHelper;
+        $this->integrationHelper    = $integrationHelper;
+        $this->router               = $router;
+        $this->requestStack         = $requestStack;
+        $this->doNotContact         = $doNotContact;
+    }
+
+    /**
+     * @param string $notification
+     *
+     * @return bool
+     */
+    public function unsubscribe($notification)
+    {
+        /** @var \Autoborna\LeadBundle\Entity\LeadRepository $repo */
+        $repo = $this->em->getRepository('AutobornaLeadBundle:Lead');
+
+        $lead = $repo->getLeadByEmail($notification);
+
+        return $this->doNotContact->addDncForContact($lead->getId(), 'notification', DoNotContact::UNSUBSCRIBED);
+    }
+
+    public function getHeaderScript()
+    {
+        if ($this->hasScript()) {
+            return 'AutobornaJS.insertScript(\'https://cdn.onesignal.com/sdks/OneSignalSDK.js\');
+                    var OneSignal = OneSignal || [];';
+        }
+    }
+
+    public function getScript()
+    {
+        if ($this->hasScript()) {
+            $integration = $this->integrationHelper->getIntegrationObject('OneSignal');
+
+            if (!$integration || false === $integration->getIntegrationSettings()->getIsPublished()) {
+                return;
+            }
+
+            $settings        = $integration->getIntegrationSettings();
+            $keys            = $integration->getDecryptedApiKeys();
+            $supported       = $settings->getSupportedFeatures();
+            $featureSettings = $settings->getFeatureSettings();
+
+            $appId                      = $keys['app_id'];
+            $safariWebId                = $keys['safari_web_id'];
+            $welcomenotificationEnabled = in_array('welcome_notification_enabled', $supported);
+            $notificationSubdomainName  = $featureSettings['subdomain_name'];
+            $leadAssociationUrl         = $this->router->generate(
+                'autoborna_subscribe_notification',
+                [],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            );
+
+            $welcomenotificationText = '';
+
+            if (!$welcomenotificationEnabled) {
+                $welcomenotificationText = 'welcomeNotification: { "disable": true },';
+            }
+
+            $server        = $this->requestStack->getCurrentRequest()->server;
+            $https         = ('https' == parse_url($server->get('HTTP_REFERER'), PHP_URL_SCHEME)) ? true : false;
+            $subdomainName = '';
+
+            if (!$https && $notificationSubdomainName) {
+                $subdomainName = 'subdomainName: "'.$notificationSubdomainName.'",
+                httpPermissionRequest: {
+                    enable: true,
+                    useCustomModal: true
+                },';
+            }
+
+            $oneSignalInit = <<<JS
+var scrpt = document.createElement('link');
+scrpt.rel ='manifest';
+scrpt.href ='/manifest.json';
+var head = document.getElementsByTagName('head')[0];
+head.appendChild(scrpt);
+
+OneSignal.push(["init", {
+    appId: "{$appId}",
+    safari_web_id: "{$safariWebId}",
+    autoRegister: true,
+    {$welcomenotificationText}
+    {$subdomainName}
+    notifyButton: {
+        enable: false // Set to false to hide
+    }
+}]);
+
+var postUserIdToAutoborna = function(userId) {
+    var data = [];
+    data['osid'] = userId;
+    AutobornaJS.makeCORSRequest('GET', '{$leadAssociationUrl}', data);
+};
+
+OneSignal.push(function() {
+    OneSignal.getUserId(function(userId) {
+        if (! userId) {
+            OneSignal.on('subscriptionChange', function(isSubscribed) {
+                if (isSubscribed) {
+                    OneSignal.getUserId(function(newUserId) {
+                        postUserIdToAutoborna(newUserId);
+                    });
+                }
+            });
+        } else {
+            postUserIdToAutoborna(userId);
+        }
+    });
+    // Just to be sure we've grabbed the ID
+    window.onbeforeunload = function() {
+        OneSignal.getUserId(function(userId) {
+            if (userId) {
+                postUserIdToAutoborna(userId);
+            }
+        });
+    };
+});
+JS;
+
+            if (!$https && $notificationSubdomainName) {
+                $oneSignalInit .= <<<'JS'
+OneSignal.push(function() {
+    OneSignal.on('notificationPermissionChange', function(permissionChange) {
+        if(currentPermission == 'granted'){
+        setTimeout(function(){
+            OneSignal.registerForPushNotifications({httpPermissionRequest: true});
+        }, 100);
+        }
+    });
+});
+JS;
+            }
+
+            return $oneSignalInit;
+        }
+    }
+
+    private function hasScript()
+    {
+        $landingPage = true;
+        $server      = $this->requestStack->getCurrentRequest()->server;
+        $cookies     = $this->requestStack->getCurrentRequest()->cookies;
+        // already exist
+        if ($cookies->get('mtc_osid')) {
+            return false;
+        }
+
+        if (false === strpos($server->get('HTTP_REFERER'), $this->coreParametersHelper->get('site_url'))) {
+            $landingPage = false;
+        }
+
+        $integration = $this->integrationHelper->getIntegrationObject('OneSignal');
+
+        if (!$integration || false === $integration->getIntegrationSettings()->getIsPublished()) {
+            return false;
+        }
+
+        $supportedFeatures = $integration->getIntegrationSettings()->getSupportedFeatures();
+
+        // disable on Landing pages
+        if (true === $landingPage && !in_array('landing_page_enabled', $supportedFeatures)) {
+            return false;
+        }
+
+        // disable on Landing pages
+        if (false === $landingPage && !in_array('tracking_page_enabled', $supportedFeatures)) {
+            return false;
+        }
+
+        return true;
+    }
+}

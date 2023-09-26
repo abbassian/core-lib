@@ -1,0 +1,16 @@
+{% set autoborna_content = autobornaTemplateVars.autobornaContent is defined ? autobornaTemplateVars.autobornaContent : '' %}
+
+<script>
+    var autobornaBasePath    = '{{ app.request.getBasePath() }}';
+    var autobornaBaseUrl     = "{{ path('autoborna_base_index') }}";
+    var autobornaAjaxUrl     = "{{ path('autoborna_core_ajax') }}";
+    var autobornaAjaxCsrf    = '{{ securityGetCsrfToken("autoborna_ajax_post") }}';
+    var autobornaImagesPath  = '{{ assetsGetImagesPath() }}';
+    var autobornaAssetPrefix = '{{ assetsGetPrefix(true) }}';
+    var autobornaContent     = '{{ autoborna_content }}';
+    var autobornaEnv         = '{{ app.environment }}';
+    var autobornaLang        = {{ translatorGetJsLang()|raw }};
+    var autobornaLocale      = '{{ app.request.getLocale() }}';
+    var autobornaEditorFonts = {{ configGetParameter('editor_fonts')|json_encode|raw }};
+</script>
+{{ outputSystemScripts(true) }}

@@ -1,0 +1,15 @@
+{
+    "allowlist": [
+        {
+            "package": "koco\/autoborna-recaptcha-bundle",
+            "display_name": "KocoCaptcha",
+            "minimum_autoborna_version": "4.1.0",
+            "maximum_autoborna_version": null
+        },
+        {
+            "package": "maatoo\/autoborna-referrals-bundle",
+            "minimum_autoborna_version": "4.1.0",
+            "maximum_autoborna_version": null
+        }
+    ]
+}
