@@ -112,7 +112,7 @@
   "repositories": [
     {
       "type": "git",
-      "url": "https://github.com/autoborna/FOSOAuthServerBundle.git"
+      "url": "https://github.com/abbassian/autoborna.git"
     }
   ],
   "minimum-stability": "dev",
